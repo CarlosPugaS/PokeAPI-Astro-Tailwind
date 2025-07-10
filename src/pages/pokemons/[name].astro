@@ -1,0 +1,55 @@
+---
+import type { GetStaticPaths } from "astro";
+import MainLayouts from "../../layouts/MainLayouts.astro";
+import PokemonsCard from "../../components/PokemonsCard.astro";
+import type { PokemonListResponse } from "../../interfaces/pokemon-list.response";
+
+export const getStaticPaths = (async() => {
+  const resp = await fetch('https://pokeapi.co/api/v2/pokemon?limit=151');
+  const {results} = (await resp.json() as PokemonListResponse);
+  
+  return results.map( ({name, url}) => ({
+    params: { name },
+    props: {name, url },
+  }))
+/*   return [
+    { 
+      params: {name: 'charmander'}, 
+      props: {name: 'charmander', url:"https://pokeapi.co/api/v2/pokemon/4/"} 
+    },
+    { 
+      params: {name: 'squirtle'},
+      props: {name: 'squirtle', url:"https://pokeapi.co/api/v2/pokemon/7/"}
+    },
+    { 
+      params: {name: 'pidgey'}, 
+      props: {name: 'pidgey', url:"https://pokeapi.co/api/v2/pokemon/16/"}
+    },
+  ]; */
+}) satisfies GetStaticPaths;
+
+const {name} = Astro.params;
+const {url} = Astro.props;
+
+const id = url.split('/').at(-2);
+const audioSrc = `https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/legacy/${id}.ogg`
+---
+
+<MainLayouts title="Algún Pokemon">
+  <section class="mt-10 mx-10 flex flex-col justify-center items-center">
+    <div>
+      <a class="hover:underline text-blue-800" href="/"> Regresar </a>
+      <h1 class="text-5xl capitalize">{name}</h1>
+    </div>
+
+    <PokemonsCard
+    name={name}
+    url={url}
+    isBig />
+    
+    <audio controls class="mt-5" >
+      <source src={audioSrc} type="audio/ogg" />
+    </audio>
+  </section>
+</MainLayouts>
+
